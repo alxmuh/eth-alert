@@ -1,0 +1,16 @@
+name: Volatility Check Cron
+
+on:
+  schedule:
+    - cron: "* * * * *"   # every minute
+  workflow_dispatch:
+
+jobs:
+  call-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Vercel API
+        run: |
+          curl -X GET \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          https://eth-alert.vercel.app/api/cron/0_$_0
