@@ -1,3 +1,4 @@
+import { storedSubscription } from "./subscribe.js";
 import webpush from "web-push";
 
 export default async function handler(req, res) {
@@ -37,7 +38,17 @@ export default async function handler(req, res) {
 
       // 🔥 SEND PUSH NOTIFICATION
       // TEMPORARY: We use a fake demo subscription
-      const demoSubscription = {}; // We will replace this with DB later
+      if (!storedSubscription) {
+  console.log("No subscriber yet.");
+} else {
+  await webpush.sendNotification(
+    storedSubscription,
+    JSON.stringify({
+      title: "ETH Alert 🚨",
+      body: `ETH moved significantly!\nPrice: $${price}`,
+    })
+  );
+} // replaced with pointer to sub.js
 
       await webpush.sendNotification(
         demoSubscription,
