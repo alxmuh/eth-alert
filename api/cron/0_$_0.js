@@ -1,7 +1,18 @@
-import { storedSubscription } from "./subscribe.js";
 import webpush from "web-push";
 
+let storedSubscription = null;
+
+/*
+  ⚡ Temporary in-memory subscription storage
+  (For real production we move this to a database later)
+*/
+
 export default async function handler(req, res) {
+
+  /* ============================= */
+  /* 🔐 AUTH CHECK (Cron Protection) */
+  /* ============================= */
+
   const authHeader = req.headers.authorization;
 
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -9,15 +20,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Initialize Web Push with VAPID keys
+
+    /* ============================= */
+    /* 🚀 Initialize Web Push */
+    /* ============================= */
+
     webpush.setVapidDetails(
       process.env.VAPID_EMAIL,
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );
 
-    const DAILY_THRESHOLD = 5;
-    const WEEKLY_THRESHOLD = 10;
+    /* ============================= */
+    /* 📊 Fetch ETH Data */
+    /* ============================= */
 
     const response = await fetch(
       "https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
@@ -25,54 +41,67 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    const price = data.market_data.current_price.usd;
-    const change24h = data.market_data.price_change_percentage_24h;
-    const change7d = data.market_data.price_change_percentage_7d;
+    const price = data?.market_data?.current_price?.usd;
+    const change24h = data?.market_data?.price_change_percentage_24h;
+    const change7d = data?.market_data?.price_change_percentage_7d;
+
+    if (!price) {
+      return res.status(500).json({ error: "Failed to fetch price" });
+    }
+
+    /* ============================= */
+    /* 🎯 Volatility Logic (Test Mode) */
+    /* ============================= */
+
+    const DAILY_THRESHOLD = 5;  // Temporary stress test
+    const WEEKLY_THRESHOLD = 1;
 
     const dailyAlert = Math.abs(change24h) >= DAILY_THRESHOLD;
     const weeklyAlert = Math.abs(change7d) >= WEEKLY_THRESHOLD;
 
     const volatilityTriggered = dailyAlert || weeklyAlert;
 
-    if (volatilityTriggered) {
+    let pushSent = false;
 
-      // 🔥 SEND PUSH NOTIFICATION
-      // TEMPORARY: We use a fake demo subscription
-      if (!storedSubscription) {
-  console.log("No subscriber yet.");
-} else {
-  await webpush.sendNotification(
-    storedSubscription,
-    JSON.stringify({
-      title: "ETH Alert 🚨",
-      body: `ETH moved significantly!\nPrice: $${price}`,
-    })
-  );
-} // replaced with pointer to sub.js
+    /* ============================= */
+    /* 🔔 Send Push If Condition Met */
+    /* ============================= */
+
+    if (volatilityTriggered && storedSubscription) {
 
       await webpush.sendNotification(
-        demoSubscription,
+        storedSubscription,
         JSON.stringify({
           title: "ETH Alert 🚨",
-          body: `ETH moved significantly!\nPrice: $${price}`,
+          body: `ETH moved!\nPrice: $${price}\n24h: ${change24h}%\n7d: ${change7d}%`
         })
       );
+
+      pushSent = true;
+
+      console.log("✅ Push sent successfully");
     }
 
-    res.status(200).json({
+    /* ============================= */
+    /* 📤 Return Response */
+    /* ============================= */
+
+    return res.status(200).json({
       success: true,
       price,
       change_24h: change24h,
       change_7d: change7d,
-      alert_triggered: volatilityTriggered
+      alert_triggered: volatilityTriggered,
+      push_sent: pushSent
     });
 
   } catch (error) {
-    console.error(error);
 
-    res.status(500).json({
+    console.error("❌ Error:", error);
+
+    return res.status(500).json({
       success: false,
-      error: "Push or price check failed"
+      error: "Internal error"
     });
   }
 }
