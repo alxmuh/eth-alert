@@ -96,12 +96,11 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+  console.error("FULL ERROR:", error);
 
-    console.error("❌ Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      error: "Internal error"
-    });
-  }
+  res.status(500).json({
+    success: false,
+    error: error.message
+  });
+}
 }
