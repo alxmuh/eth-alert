@@ -53,8 +53,8 @@ export default async function handler(req, res) {
     /* 🎯 Volatility Logic (Test Mode) */
     /* ============================= */
 
-    const DAILY_THRESHOLD = 5;  // Temporary stress test
-    const WEEKLY_THRESHOLD = 1;
+    const DAILY_THRESHOLD = 0.1;  // Temporary stress test
+    const WEEKLY_THRESHOLD = 0.1;
 
     const dailyAlert = Math.abs(change24h) >= DAILY_THRESHOLD;
     const weeklyAlert = Math.abs(change7d) >= WEEKLY_THRESHOLD;
