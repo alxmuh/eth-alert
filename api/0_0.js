@@ -1,0 +1,37 @@
+export default async function handler(req, res) {
+  try {
+    const DAILY_THRESHOLD = 5;   // 5%
+    const WEEKLY_THRESHOLD = 10; // 10%
+
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
+    );
+
+    const data = await response.json();
+
+    const price = data.market_data.current_price.usd;
+    const change24h = data.market_data.price_change_percentage_24h;
+    const change7d = data.market_data.price_change_percentage_7d;
+
+    const dailyAlert = Math.abs(change24h) >= DAILY_THRESHOLD;
+    const weeklyAlert = Math.abs(change7d) >= WEEKLY_THRESHOLD;
+
+    const alertTriggered = dailyAlert || weeklyAlert;
+
+    res.status(200).json({
+      success: true,
+      current_price: price,
+      change_24h_percent: change24h,
+      change_7d_percent: change7d,
+      daily_threshold: DAILY_THRESHOLD,
+      weekly_threshold: WEEKLY_THRESHOLD,
+      alert_triggered: alertTriggered
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch price data"
+    });
+  }
+}
