@@ -1,6 +1,10 @@
 let lastAlertTimestamp = null;
-
 export default async function handler(req, res) {
+
+  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const DAILY_THRESHOLD = 5;   // 5%
     const WEEKLY_THRESHOLD = 10; // 10%
