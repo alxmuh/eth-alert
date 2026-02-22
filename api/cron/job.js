@@ -1,6 +1,12 @@
 import webpush from "web-push";
 
-let storedSubscription = null;
+const storedSubscription = {
+	"endpoint": "https://fcm.googleapis.com/fcm/send/fHPqav2dfvY:APA91bGOjjLk-diOHAbU4jGxFwXH9pz7ZPaXe_0LvzoGZZMVO7enTVyT3CbrzX9_X_M-Qb5ANAk65Su3HAPoq7sjHiAbzdqnEQubiwXdRZ8iW24eVw0kgtH28poqx2Q2SNyVdU1uyueb", 
+	"expirationTime": null, 
+	"keys": { "p256dh": "BOjotEuiuk2e4o9C47_62ilhnHAuy80OU6MaD9Ksaeufc9ZFlNm1XD3BEamdmf2MkvCr4WJj1x7Jp20ICRGArsU", 
+	"auth": "3DctZYu3OB7wmZypyPTB9Q" 
+	}
+ };
 
 /*
   ⚡ Temporary in-memory subscription storage
