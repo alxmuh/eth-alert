@@ -1,6 +1,6 @@
-console.log(JSON.stringify(req.body, null, 2));
-/*
-export let storedSubscription = null;
+let storedSubscription = null;
+
+export { storedSubscription };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -10,13 +10,12 @@ export default async function handler(req, res) {
   try {
     storedSubscription = req.body;
 
-    res.status(200).json({
-      success: true,
-      message: "Subscription stored"
-    });
+    console.log("Subscription received:");
+    console.log(JSON.stringify(req.body, null, 2));
 
-  } catch (err) {
-    res.status(500).json({ error: "Failed" });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Subscription failed" });
   }
 }
-*/
