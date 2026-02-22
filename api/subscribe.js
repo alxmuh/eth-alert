@@ -1,3 +1,5 @@
+console.log(JSON.stringify(req.body, null, 2));
+/*
 export let storedSubscription = null;
 
 export default async function handler(req, res) {
