@@ -2,7 +2,7 @@ name: Volatility Check Cron
 
 on:
   schedule:
-    - cron: "* * * * *"   # every minute
+    - cron: "*/2 * * * *"   # every minute
   workflow_dispatch:
 
 jobs:
